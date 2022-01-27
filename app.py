@@ -1,20 +1,10 @@
-try:
-    import seaborn as sns
-    import numpy as np
-    import pandas as pd
-    import streamlit as st
-    import plotly.express as px
-    import plotly.graph_objects as go
-except:
-    import os
-    os.system('pip install -r requirement.txt')
-    import seaborn as sns
-    import numpy as np
-    import pandas as pd
-    import streamlit as st
-    import plotly.express as px
-    import plotly.graph_objects as go
-    
+import seaborn as sns
+import numpy as np
+import pandas as pd
+import streamlit as st
+import plotly.express as px
+import plotly.graph_objects as go
+
 # Set Page Layout
 st.set_page_config(page_title="DASHBOARD HABITAT", layout='wide')
 
