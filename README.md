@@ -21,4 +21,4 @@ dashboard concernant des ménages au Cameroon fait avec streamlit et plotly
 
 - Vous vous mettez au même niveau que le fichier app.py, puis vous ouvez votre console et saisissez la commande suivante pour lancer le dashborad:
 	streamlit run app.py
-- Vous aurez accès au dashboard via le lien suivant: [dashboard habitat](http://localhost:8501/)
+- Vous aurez accès au dashboard via le lien suivant: [dashboard habitat(localement bien sûr: http://localhost:8501/)](http://localhost:8501/)
