@@ -207,6 +207,9 @@ st.sidebar.markdown('[Cliquez pour voir le profil linkedin](https://www.linkedin
 st.sidebar.text('N\'DRI Koffi Roland')
 st.sidebar.markdown('[Cliquez pour voir le profil linkedin](https://www.linkedin.com/in/koffi-roland-n-dri-50821813b/)')
 
+st.sidebar.markdown('---')
+st.sidebar.markdown('[Code source du projet](https://github.com/richmondkongo/dashboard_habitat)')
+
 
 #-----------------------------------------------------------------------
 
