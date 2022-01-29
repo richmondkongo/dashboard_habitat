@@ -10,7 +10,7 @@ import plotly.graph_objects as go
 st.set_page_config(page_title="DASHBOARD HABITAT", layout='wide')
 
 #-----------------------------------------------------------------------
-hbt = pd.read_csv('habitat_ok.csv')
+hbt = pd.read_csv('habitat_impute.csv')
 
 hbt = hbt.rename(columns={
     'Arrondissement':'arrondissement',

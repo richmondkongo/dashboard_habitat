@@ -4,9 +4,9 @@ dashboard concernant des ménages au Cameroon fait avec streamlit et plotly
 ## Auteurs
 <h3>KONGO Richmond<h3>
 
->>> [linkedin](https://www.linkedin.com/in/richmond-kongo/)
+> [linkedin](https://www.linkedin.com/in/richmond-kongo/)
 
->>> [github](https://github.com/richmondkongo/)
+> [github](https://github.com/richmondkongo/)
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
