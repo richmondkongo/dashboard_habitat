@@ -178,16 +178,17 @@ with col2:
 hbt = hbt.loc[hbt.religion.isin(sel_religion)]
 hbt = hbt.loc[hbt.multilangue.isin(sel_multilangue)]
 
+try:
+    st.sidebar.text("Menage suivant le nombre d'enfant minimum et maximal")
+    col1, col2 = st.columns(2)
+    with col1:
+        nb_enf_min = st.sidebar.number_input('Minimum enfants', min_value=min(nb_enfant), max_value=max(nb_enfant), value=min(nb_enfant), step=1)
+    with col2:
+        nb_enf_max = st.sidebar.number_input('Maximum enfants', min_value=min(nb_enfant), max_value=max(nb_enfant), value=max(nb_enfant), step=1)
 
-st.sidebar.text("Menage suivant le nombre d'enfant minimum et maximal")
-col1, col2 = st.columns(2)
-with col1:
-    nb_enf_min = st.sidebar.number_input('Minimum enfants', min_value=min(nb_enfant), max_value=max(nb_enfant), value=min(nb_enfant), step=1)
-with col2:
-    nb_enf_max = st.sidebar.number_input('Maximum enfants', min_value=min(nb_enfant), max_value=max(nb_enfant), value=max(nb_enfant), step=1)
-
-hbt = hbt.loc[((hbt.nb_enfant >= nb_enf_min) & (hbt.nb_enfant <= nb_enf_max))]
-
+    hbt = hbt.loc[((hbt.nb_enfant >= nb_enf_min) & (hbt.nb_enfant <= nb_enf_max))]
+except:
+    pass
 
 # About Me
 st.sidebar.markdown('---')
@@ -205,7 +206,6 @@ st.sidebar.markdown('[Cliquez pour voir le profil linkedin](https://www.linkedin
 
 st.sidebar.text('N\'DRI Koffi Roland')
 st.sidebar.markdown('[Cliquez pour voir le profil linkedin](https://www.linkedin.com/in/koffi-roland-n-dri-50821813b/)')
-
 
 
 #-----------------------------------------------------------------------
@@ -246,236 +246,239 @@ with col4:
 
 
 #-----------------------------------------------------------------------
+try:
+    st.subheader('| QUELQUES LIGNES DES DONNEES')
 
-st.subheader('| QUELQUES LIGNES DES DONNEES')
+    if (hbt.shape[0] >= 200000):
+        st.dataframe(hbt.sample(200000))
+    else:
+        st.dataframe(hbt)
 
-if (hbt.shape[0] >= 200000):
-    st.dataframe(hbt.sample(200000))
-else:
-    st.dataframe(hbt)
+    #-----------------------------------------------------------------------
 
-#-----------------------------------------------------------------------
+    st.subheader('| REPARTITION DES CHEFS DE MENAGES PAR ARRONDISSEMENT SELON L\'AGE')
 
-st.subheader('| REPARTITION DES CHEFS DE MENAGES PAR ARRONDISSEMENT SELON L\'AGE')
+    st.text('INTERVALLE D\'AGE')
 
-st.text('INTERVALLE D\'AGE')
+    df = hbt.loc[hbt[['lien_parente']].values == 1]
 
-df = hbt.loc[hbt[['lien_parente']].values == 1]
+    col1, col2 = st.columns(2)
+    with col1:
+        age_min = st.number_input('Plus petit', min_value=df.age.min(), max_value=df.age.max(), value=df.age.min(), step=1)
+    with col2:
+        age_max = st.number_input('Plus grand', min_value=df.age.min(), max_value=df.age.max(), value=df.age.max(), step=1)
 
-col1, col2 = st.columns(2)
-with col1:
-    age_min = st.number_input('Plus petit', min_value=df.age.min(), max_value=df.age.max(), value=df.age.min(), step=1)
-with col2:
-    age_max = st.number_input('Plus grand', min_value=df.age.min(), max_value=df.age.max(), value=df.age.max(), step=1)
+    df = pd.DataFrame(df.groupby(['arrondissement', 'age']).arrondissement.count()).rename(columns={'arrondissement':'count'}).reset_index()
+    df = df.loc[((df.age>=age_min) & (df.age<=age_max))]
 
-df = pd.DataFrame(df.groupby(['arrondissement', 'age']).arrondissement.count()).rename(columns={'arrondissement':'count'}).reset_index()
-df = df.loc[((df.age>=age_min) & (df.age<=age_max))]
+    fig = px.bar(df, x="age", y="count", color="age")
+    st.plotly_chart(fig, use_container_width=True)
 
-fig = px.bar(df, x="age", y="count", color="age")
-st.plotly_chart(fig, use_container_width=True)
+    #-----------------------------------------------------------------------
 
-#-----------------------------------------------------------------------
+    st.subheader('| REPARTITION DES CHEFS DE MENAGES PAR ARRONDISSEMENT SELON LE DIPLOME LE PLUS ELEVE')
 
-st.subheader('| REPARTITION DES CHEFS DE MENAGES PAR ARRONDISSEMENT SELON LE DIPLOME LE PLUS ELEVE')
+    df = hbt.loc[hbt[['lien_parente']].values == 1]
+    df = pd.DataFrame(df.groupby(['arrondissement', 'diplome']).arrondissement.count()).rename(columns={'arrondissement':'count'}).reset_index()
 
-df = hbt.loc[hbt[['lien_parente']].values == 1]
-df = pd.DataFrame(df.groupby(['arrondissement', 'diplome']).arrondissement.count()).rename(columns={'arrondissement':'count'}).reset_index()
+    diplome = np.unique(df.diplome)
+    sel_diplome = st.multiselect('Diplome', diplome, diplome)
+    df = df.loc[df.diplome.isin(sel_diplome)]
 
-diplome = np.unique(df.diplome)
-sel_diplome = st.multiselect('Diplome', diplome, diplome)
-df = df.loc[df.diplome.isin(sel_diplome)]
 
+    #fig = px.bar(df, x="diplome", y="count", color="diplome")
+    fig = px.funnel_area(names=df['diplome'].values,
+                        values=df['count'].values)
+    st.plotly_chart(fig, use_container_width=True)
 
-#fig = px.bar(df, x="diplome", y="count", color="diplome")
-fig = px.funnel_area(names=df['diplome'].values,
-                    values=df['count'].values)
-st.plotly_chart(fig, use_container_width=True)
+    #-----------------------------------------------------------------------
 
-#-----------------------------------------------------------------------
+    st.subheader('| REPARTITION DES MENAGES PAR ARRONDISSEMENT SELON LE MILIEU DE RESIDENCE')
 
-st.subheader('| REPARTITION DES MENAGES PAR ARRONDISSEMENT SELON LE MILIEU DE RESIDENCE')
+    df = hbt
+    df = pd.DataFrame(df.groupby(['arrondissement', 'milieu_residence']).arrondissement.count()).rename(columns={'arrondissement':'count'}).reset_index()
 
-df = hbt
-df = pd.DataFrame(df.groupby(['arrondissement', 'milieu_residence']).arrondissement.count()).rename(columns={'arrondissement':'count'}).reset_index()
 
+    sel_mil_res = st.selectbox('Milieu de résidence',options=('TOUT', 'URBAIN', 'RURAL'))
 
-sel_mil_res = st.selectbox('Milieu de résidence',options=('TOUT', 'URBAIN', 'RURAL'))
+    if (sel_mil_res != "TOUT"):
+        df = df.loc[df.milieu_residence == sel_mil_res]
 
-if (sel_mil_res != "TOUT"):
-    df = df.loc[df.milieu_residence == sel_mil_res]
+    fig = go.Figure()
 
-fig = go.Figure()
+    fig.add_trace(go.Bar(x=df.loc[df.milieu_residence == "URBAIN",'arrondissement'].values, y=df.loc[df.milieu_residence == "URBAIN", 'count'].values,
+        base= df['count'].values * -1,
+        marker_color='crimson',
+        name='URBAIN'))
 
-fig.add_trace(go.Bar(x=df.loc[df.milieu_residence == "URBAIN",'arrondissement'].values, y=df.loc[df.milieu_residence == "URBAIN", 'count'].values,
-    base= df['count'].values * -1,
-    marker_color='crimson',
-    name='URBAIN'))
+    fig.add_trace(go.Bar(x=df.loc[df.milieu_residence == "RURAL",'arrondissement'].values, y=df.loc[df.milieu_residence == "RURAL", 'count'].values,
+        base=0,
+        marker_color='lightslategrey',
+        name='RURAL'))
 
-fig.add_trace(go.Bar(x=df.loc[df.milieu_residence == "RURAL",'arrondissement'].values, y=df.loc[df.milieu_residence == "RURAL", 'count'].values,
-    base=0,
-    marker_color='lightslategrey',
-    name='RURAL'))
 
+    #fig = px.pie(df, values='count', names='milieu_residence')
+    #fig.update_traces(textposition='inside')
+    #fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
+    st.plotly_chart(fig, use_container_width=True)
 
-#fig = px.pie(df, values='count', names='milieu_residence')
-#fig.update_traces(textposition='inside')
-#fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
-st.plotly_chart(fig, use_container_width=True)
+    #-----------------------------------------------------------------------
 
-#-----------------------------------------------------------------------
+    st.subheader('| REPARTITION DES MENAGES PAR ARRONDISSEMENT SELON L\'ETAT MATRIMONIAL')
 
-st.subheader('| REPARTITION DES MENAGES PAR ARRONDISSEMENT SELON L\'ETAT MATRIMONIAL')
+    df = hbt
+    df = pd.DataFrame(df.groupby(['arrondissement', 'etat_matrimonial']).arrondissement.count()).rename(columns={'arrondissement':'count'}).reset_index()
 
-df = hbt
-df = pd.DataFrame(df.groupby(['arrondissement', 'etat_matrimonial']).arrondissement.count()).rename(columns={'arrondissement':'count'}).reset_index()
+    etat_matrimonial = np.unique(df.etat_matrimonial)
+    sel_etat_matrimonial = st.multiselect('Etat matrimonial', etat_matrimonial, etat_matrimonial)
+    df = df.loc[df.etat_matrimonial.isin(sel_etat_matrimonial)]
 
-etat_matrimonial = np.unique(df.etat_matrimonial)
-sel_etat_matrimonial = st.multiselect('Etat matrimonial', etat_matrimonial, etat_matrimonial)
-df = df.loc[df.etat_matrimonial.isin(sel_etat_matrimonial)]
 
+    fig = px.bar(df, x="etat_matrimonial", y="count", color="arrondissement")
+    st.plotly_chart(fig, use_container_width=True)
 
-fig = px.bar(df, x="etat_matrimonial", y="count", color="arrondissement")
-st.plotly_chart(fig, use_container_width=True)
+    #-----------------------------------------------------------------------
 
-#-----------------------------------------------------------------------
+    st.subheader('| REPARTITION DES MENAGES PAR ARRONDISSEMENT SELON L\'ETAT DE SANTE')
 
-st.subheader('| REPARTITION DES MENAGES PAR ARRONDISSEMENT SELON L\'ETAT DE SANTE')
+    df = hbt
+    df = pd.DataFrame(df.groupby(['arrondissement', 'etat_sante']).arrondissement.count()).rename(columns={'arrondissement':'count'}).reset_index()
 
-df = hbt
-df = pd.DataFrame(df.groupby(['arrondissement', 'etat_sante']).arrondissement.count()).rename(columns={'arrondissement':'count'}).reset_index()
 
+    etat_sante = np.unique(df.etat_sante)
+    sel_etat_sante = st.multiselect('Etat de santé', etat_sante, etat_sante)
+    df = df.loc[df.etat_sante.isin(sel_etat_sante)]
 
-etat_sante = np.unique(df.etat_sante)
-sel_etat_sante = st.multiselect('Etat de santé', etat_sante, etat_sante)
-df = df.loc[df.etat_sante.isin(sel_etat_sante)]
+    fig = px.funnel(df, x='etat_sante', y='count', color='arrondissement')
 
-fig = px.funnel(df, x='etat_sante', y='count', color='arrondissement')
+    st.plotly_chart(fig, use_container_width=True)
+        
 
-st.plotly_chart(fig, use_container_width=True)
-    
+    #-----------------------------------------------------------------------
 
-#-----------------------------------------------------------------------
+    st.subheader('| REPARTITION DES MENAGES PAR ARRONDISSEMENT SELON L\'ACTIVITE AGROPASTORALE')
 
-st.subheader('| REPARTITION DES MENAGES PAR ARRONDISSEMENT SELON L\'ACTIVITE AGROPASTORALE')
 
+    df = hbt
+    df = pd.DataFrame(df.groupby(['arrondissement', 'activite_agropastorale']).arrondissement.count()).rename(columns={'arrondissement':'count'}).reset_index()
 
-df = hbt
-df = pd.DataFrame(df.groupby(['arrondissement', 'activite_agropastorale']).arrondissement.count()).rename(columns={'arrondissement':'count'}).reset_index()
 
+    agro_pastorale = np.unique(df.activite_agropastorale)
+    sel_agro_pastorale = st.multiselect('Activite agropastorale', agro_pastorale , agro_pastorale )
+    df = df.loc[df.activite_agropastorale.isin(sel_agro_pastorale)]
 
-agro_pastorale = np.unique(df.activite_agropastorale)
-sel_agro_pastorale = st.multiselect('Activite agropastorale', agro_pastorale , agro_pastorale )
-df = df.loc[df.activite_agropastorale.isin(sel_agro_pastorale)]
 
+    fig = px.histogram(df, x="activite_agropastorale", y="count",
+                color='arrondissement', barmode='group',
+                histfunc='avg',
+                height=400)
 
-fig = px.histogram(df, x="activite_agropastorale", y="count",
-             color='arrondissement', barmode='group',
-             histfunc='avg',
-             height=400)
+    #fig = px.bar(df, x="activite_agropastorale", y="count", color="activite_agropastorale")
+    st.plotly_chart(fig, use_container_width=True)
 
-#fig = px.bar(df, x="activite_agropastorale", y="count", color="activite_agropastorale")
-st.plotly_chart(fig, use_container_width=True)
+    #-----------------------------------------------------------------------
 
-#-----------------------------------------------------------------------
+    st.subheader('| REPARTITION DES MENAGES PAR ARRONDISSEMENT SELON LA RELIGION, LE NOMBRE DE LANGUE PARLEE ET LE NOMBRE D\'ENFANT')
 
-st.subheader('| REPARTITION DES MENAGES PAR ARRONDISSEMENT SELON LA RELIGION, LE NOMBRE DE LANGUE PARLEE ET LE NOMBRE D\'ENFANT')
+    st.text("Menage suivant la réligion ou les langues")
+    df = hbt
+    df = pd.DataFrame(df.groupby(['arrondissement', 'religion', 'multilangue', 'nb_enfant']).arrondissement.count()).rename(columns={'arrondissement':'count'}).reset_index()
+    col1, col2 = st.columns(2)
 
-st.text("Menage suivant la réligion ou les langues")
-df = hbt
-df = pd.DataFrame(df.groupby(['arrondissement', 'religion', 'multilangue', 'nb_enfant']).arrondissement.count()).rename(columns={'arrondissement':'count'}).reset_index()
-col1, col2 = st.columns(2)
+    nb_enfant = np.unique(df.nb_enfant)
+    religion = np.unique(df.religion)
+    multilangue = np.unique(df.multilangue)
+    with col1:
+        sel_multilangue = st.multiselect('Multilangue', multilangue, multilangue)
+    with col2:
+        sel_religion = st.multiselect('Réligion', religion, religion)
 
-nb_enfant = np.unique(df.nb_enfant)
-religion = np.unique(df.religion)
-multilangue = np.unique(df.multilangue)
-with col1:
-    sel_multilangue = st.multiselect('Multilangue', multilangue, multilangue)
-with col2:
-    sel_religion = st.multiselect('Réligion', religion, religion)
 
+    df = df.loc[df.religion.isin(sel_religion)]
+    df = df.loc[df.multilangue.isin(sel_multilangue)]
 
-df = df.loc[df.religion.isin(sel_religion)]
-df = df.loc[df.multilangue.isin(sel_multilangue)]
 
+    st.text("Menage suivant le nombre d'enfant minimum et maximal")
+    col1, col2 = st.columns(2)
+    with col1:
+        nb_enf_min = st.number_input('Plus petit', min_value=min(nb_enfant), max_value=max(nb_enfant), value=min(nb_enfant), step=1)
+    with col2:
+        nb_enf_max = st.number_input('Plus grand', min_value=min(nb_enfant), max_value=max(nb_enfant), value=max(nb_enfant), step=1)
 
-st.text("Menage suivant le nombre d'enfant minimum et maximal")
-col1, col2 = st.columns(2)
-with col1:
-    nb_enf_min = st.number_input('Plus petit', min_value=min(nb_enfant), max_value=max(nb_enfant), value=min(nb_enfant), step=1)
-with col2:
-    nb_enf_max = st.number_input('Plus grand', min_value=min(nb_enfant), max_value=max(nb_enfant), value=max(nb_enfant), step=1)
+    df = df.loc[((df.nb_enfant >= nb_enf_min) & (df.nb_enfant <= nb_enf_max))]
 
-df = df.loc[((df.nb_enfant >= nb_enf_min) & (df.nb_enfant <= nb_enf_max))]
 
+    fig = px.scatter(df, y="arrondissement", x="count",
+                size="nb_enfant", color="religion",
+                    hover_name="multilangue", 
+                    log_x=True, size_max=60)
+    st.plotly_chart(fig, use_container_width=True)
 
-fig = px.scatter(df, y="arrondissement", x="count",
-            size="nb_enfant", color="religion",
-                hover_name="multilangue", 
-                log_x=True, size_max=60)
-st.plotly_chart(fig, use_container_width=True)
+    #-----------------------------------------------------------------------
 
-#-----------------------------------------------------------------------
+    st.subheader('| REPARTITION DES MENAGES PAR ARRONDISSEMENT SELON LE TYPE DE STRUCTURE')
 
-st.subheader('| REPARTITION DES MENAGES PAR ARRONDISSEMENT SELON LE TYPE DE STRUCTURE')
+    df = hbt
+    df = pd.DataFrame(df.groupby(['arrondissement', 'type_structure']).arrondissement.count()).rename(columns={'arrondissement':'count'}).reset_index()
+    list_structure = np.unique(df.type_structure)
+    sel_structure = st.multiselect('Sélectionner les types de structure que vous souhaitez voir', list_structure, list_structure)
+    df = df.loc[df.type_structure.isin(sel_structure)]
 
-df = hbt
-df = pd.DataFrame(df.groupby(['arrondissement', 'type_structure']).arrondissement.count()).rename(columns={'arrondissement':'count'}).reset_index()
-list_structure = np.unique(df.type_structure)
-sel_structure = st.multiselect('Sélectionner les types de structure que vous souhaitez voir', list_structure, list_structure)
-df = df.loc[df.type_structure.isin(sel_structure)]
+    fig = px.bar(df, x="type_structure", y="count", color="arrondissement")#, title="la répartition des ménages par arrondissement selon le Type de structure")
+    st.plotly_chart(fig, use_container_width=True)
 
-fig = px.bar(df, x="type_structure", y="count", color="arrondissement")#, title="la répartition des ménages par arrondissement selon le Type de structure")
-st.plotly_chart(fig, use_container_width=True)
+    #-----------------------------------------------------------------------
 
-#-----------------------------------------------------------------------
+    st.subheader('| REPARTITION DES MENAGES PAR ARRONDISSEMENT SELON LE STATUT D\'OCCUPATION ET SELON QUE LE REPONDANT EST AUTOCHTONE OU PAS')
 
-st.subheader('| REPARTITION DES MENAGES PAR ARRONDISSEMENT SELON LE STATUT D\'OCCUPATION ET SELON QUE LE REPONDANT EST AUTOCHTONE OU PAS')
+    col1, col2 = st.columns(2)
 
-col1, col2 = st.columns(2)
+    df = hbt
+    df = pd.DataFrame(df.groupby(['arrondissement', 'statut_occupation', 'autochtone']).arrondissement.count()).rename(columns={'arrondissement':'count'}).reset_index()
 
-df = hbt
-df = pd.DataFrame(df.groupby(['arrondissement', 'statut_occupation', 'autochtone']).arrondissement.count()).rename(columns={'arrondissement':'count'}).reset_index()
 
+    with col1:
+        sel_autochtone = st.selectbox('Autochtone',options=('TOUT', 'OUI', 'NON'))
 
-with col1:
-    sel_autochtone = st.selectbox('Autochtone',options=('TOUT', 'OUI', 'NON'))
+    if (sel_autochtone != "TOUT"):
+        oui = "OUI" if (sel_autochtone == "OUI") else "NON"
+        df = df.loc[df.autochtone == oui]
 
-if (sel_autochtone != "TOUT"):
-    oui = "OUI" if (sel_autochtone == "OUI") else "NON"
-    df = df.loc[df.autochtone == oui]
+    with col2:
+        sel_occup = st.selectbox('Statut d\'occupation',options=('TOUT', "PROPRIETAIRE", "LOCATAIRE", "AUTRE"))
+    if sel_occup != "TOUT":
+        # (1=Propriétaire; 2=Locataire; 3=Autre)
+        if (sel_occup == "PROPRIETAIRE"):
+            occup = "Propriétaire"
+        elif (sel_occup == "LOCATAIRE"):
+            occup = "Locataire"
+        elif (sel_occup == "AUTRE"):
+            occup = "Autre"
 
-with col2:
-    sel_occup = st.selectbox('Statut d\'occupation',options=('TOUT', "PROPRIETAIRE", "LOCATAIRE", "AUTRE"))
-if sel_occup != "TOUT":
-    # (1=Propriétaire; 2=Locataire; 3=Autre)
-    if (sel_occup == "PROPRIETAIRE"):
-        occup = "Propriétaire"
-    elif (sel_occup == "LOCATAIRE"):
-        occup = "Locataire"
-    elif (sel_occup == "AUTRE"):
-        occup = "Autre"
+        df = df.loc[df.statut_occupation == occup]
 
-    df = df.loc[df.statut_occupation == occup]
 
+    if df.loc[df.autochtone == "OUI"].shape[0] != 0:
+        statut_occupation = df.groupby('statut_occupation').sum().index
+        df_OUI = pd.DataFrame(dict(count=df.loc[df.autochtone == "OUI"].groupby('statut_occupation').sum()['count'].values, statut_occupation=statut_occupation))
+        df_OUI['autochtone'] = 'OUI'
 
-if df.loc[df.autochtone == "OUI"].shape[0] != 0:
-    statut_occupation = df.groupby('statut_occupation').sum().index
-    df_OUI = pd.DataFrame(dict(count=df.loc[df.autochtone == "OUI"].groupby('statut_occupation').sum()['count'].values, statut_occupation=statut_occupation))
-    df_OUI['autochtone'] = 'OUI'
+    if df.loc[df.autochtone == "NON"].shape[0] != 0:
+        statut_occupation = df.groupby('statut_occupation').sum().index
+        df_NON = pd.DataFrame(dict(count=df.loc[df.autochtone == "NON"].groupby('statut_occupation').sum()['count'].values, statut_occupation=statut_occupation))
+        df_NON['autochtone'] = 'NON'
 
-if df.loc[df.autochtone == "NON"].shape[0] != 0:
-    statut_occupation = df.groupby('statut_occupation').sum().index
-    df_NON = pd.DataFrame(dict(count=df.loc[df.autochtone == "NON"].groupby('statut_occupation').sum()['count'].values, statut_occupation=statut_occupation))
-    df_NON['autochtone'] = 'NON'
+    if df.loc[df.autochtone == "OUI"].shape[0] == 0:
+        df_aff = df_NON
+    elif df.loc[df.autochtone == "NON"].shape[0] == 0:
+        df_aff = df_OUI
+    else:
+        df_aff = pd.concat([df_OUI, df_NON], axis=0)
 
-if df.loc[df.autochtone == "OUI"].shape[0] == 0:
-    df_aff = df_NON
-elif df.loc[df.autochtone == "NON"].shape[0] == 0:
-    df_aff = df_OUI
-else:
-    df_aff = pd.concat([df_OUI, df_NON], axis=0)
+    fig = px.funnel(df_aff, x='count', y='statut_occupation', color='autochtone')
 
-fig = px.funnel(df_aff, x='count', y='statut_occupation', color='autochtone')
 
+    st.plotly_chart(fig, use_container_width=True)
 
-st.plotly_chart(fig, use_container_width=True)
+except:
+    st.subheader('DATAFRAME VIDE')
