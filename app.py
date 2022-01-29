@@ -11,14 +11,6 @@ import plotly.figure_factory as ff
 st.set_page_config(page_title="DASHBOARD HABITAT", layout='wide')
 
 #-----------------------------------------------------------------------
-
-
-# hbt = pd.read_csv('Habitat.csv', encoding='latin-1', sep=';')
-# desc = hbt.loc[0]
-# hbt = hbt.loc[1:]
-# hbt = hbt.dropna()
-
-
 hbt = pd.read_csv('habitat_impute.csv')
 
 hbt = hbt.rename(columns={
@@ -114,20 +106,12 @@ hbt.milieu_residence = np.where(hbt.milieu_residence==1, "URBAIN", "RURAL")
 #-----------------------------------------------------------------------
 
 # SIDEBAR
-# Let's add some functionalities in a sidebar
-
 st.sidebar.subheader('Filtres généraux')
-
-#df = df.query('sex == @filter_sex')
-#filter_city = st.sidebar.multiselect('Filter By City', options=arrondissement, default=arrondissement)
-#filter_city = st.sidebar.slider('Arrondissement', min_value=0, max_value=350, value=50, step=1)
-#hbt = hbt.query('arrondissement in @filter_city')
 
 st.sidebar.text('Numéros d\'arrondissement')
 arrondissement = np.sort(np.unique(hbt.arrondissement))
 arr_min = st.sidebar.number_input('Plus petit numéro d\'arrondissement', min_value=arrondissement[0], max_value=arrondissement[len(arrondissement)-1], value=arrondissement[0], step=1)
-#arr_max = st.sidebar.number_input('Plus grand numéro d\'arrondissement', min_value=arrondissement[0], max_value=arrondissement[len(arrondissement)-1], value=arrondissement[len(arrondissement)-1], step=1)
-arr_max = st.sidebar.number_input('Plus grand numéro d\'arrondissement', min_value=arrondissement[0], max_value=arrondissement[len(arrondissement)-1], value=arrondissement[5], step=1)
+arr_max = st.sidebar.number_input('Plus grand numéro d\'arrondissement', min_value=arrondissement[0], max_value=arrondissement[len(arrondissement)-1], value=arrondissement[4], step=1)
 hbt = hbt.loc[((hbt.arrondissement>=arr_min) & (hbt.arrondissement<=arr_max))]
 
 
@@ -190,9 +174,8 @@ try:
 except:
     pass
 
-# About Me
+# A propos de nous
 st.sidebar.markdown('---')
-
 st.sidebar.markdown('***Créateurs du dashboard***')
 
 st.sidebar.text('KONGO Richmond')
@@ -213,36 +196,31 @@ st.sidebar.markdown('[Code source du projet](https://github.com/richmondkongo/da
 
 #-----------------------------------------------------------------------
 
-# Title
+# Titre
 st.title('DASHBOARD HABITAT')
 
+# Description du site
 """
 **L’institut National de la Statistique** a effectué un recensement des ménages et des individus qui
 vivent dans ces ménages, ce dashboard présente les données obtenues.
 """
-
-#Separator
 st.markdown('---')
 
 #-----------------------------------------------------------------------
 
-# Columns Summary
-
+# Les cards pour les stats de bases
 st.subheader('| STATISTIQUES DESCRIPTIVES')
 
 col1, col2, col3, col4 = st.columns(4)
 with col1:
     st.title(hbt_base.shape[0])
     st.text('TOTAL DES MENAGES')
-# column 2 - Count of meals
 with col2:
     st.title(hbt.shape[0])
     st.text('TOTAL DES MENAGES SELON \nVOS FILTRES GENERAUX')
-# column 3 - Sum of clients
 with col3:
     st.title(len(np.unique(hbt_base.arrondissement)))
     st.text('NOMBRE D\'ARRONDISSEMENTS')
-# column 4 - Count of cities
 with col4:
     st.title(len(np.unique(hbt.arrondissement)))
     st.text('NOMBRE D\'ARRONDISSEMENTS SELON \nVOS FILTRES GENERAUX')
@@ -250,9 +228,11 @@ with col4:
 
 #-----------------------------------------------------------------------
 try:
+    # Le try permettra de gérer les cas où les dataframes sont vides, parce que dans ce cas de figure cela entraînera une erreur au niveau des filtres
     st.subheader('| QUELQUES LIGNES DES DONNEES')
 
     if (hbt.shape[0] >= 200000):
+        # Au delà de 200 000 lignes streamlit n'arrive plus à charger les données dans un tableau d'où cette condition
         st.dataframe(hbt.sample(200000))
     else:
         st.dataframe(hbt)
@@ -288,10 +268,7 @@ try:
     sel_diplome = st.multiselect('Diplome', diplome, diplome)
     df = df.loc[df.diplome.isin(sel_diplome)]
 
-
-    #fig = px.bar(df, x="diplome", y="count", color="diplome")
-    fig = px.funnel_area(names=df['diplome'].values,
-                        values=df['count'].values)
+    fig = px.funnel_area(names=df['diplome'].values, values=df['count'].values)
     st.plotly_chart(fig, use_container_width=True)
 
     #-----------------------------------------------------------------------
@@ -308,7 +285,6 @@ try:
         df = df.loc[df.milieu_residence == sel_mil_res]
 
     fig = go.Figure()
-
     fig.add_trace(go.Bar(x=df.loc[df.milieu_residence == "URBAIN",'arrondissement'].values, y=df.loc[df.milieu_residence == "URBAIN", 'count'].values,
         base= df['count'].values * -1,
         marker_color='crimson',
@@ -319,10 +295,6 @@ try:
         marker_color='lightslategrey',
         name='RURAL'))
 
-
-    #fig = px.pie(df, values='count', names='milieu_residence')
-    #fig.update_traces(textposition='inside')
-    #fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
     st.plotly_chart(fig, use_container_width=True)
 
     #-----------------------------------------------------------------------
@@ -355,12 +327,10 @@ try:
     fig = px.funnel(df, x='etat_sante', y='count', color='arrondissement')
 
     st.plotly_chart(fig, use_container_width=True)
-        
 
     #-----------------------------------------------------------------------
 
     st.subheader('| REPARTITION DES MENAGES PAR ARRONDISSEMENT SELON L\'ACTIVITE AGROPASTORALE')
-
 
     df = hbt
     df = pd.DataFrame(df.groupby(['arrondissement', 'activite_agropastorale']).arrondissement.count()).rename(columns={'arrondissement':'count'}).reset_index()
@@ -376,7 +346,6 @@ try:
                 histfunc='avg',
                 height=400)
 
-    #fig = px.bar(df, x="activite_agropastorale", y="count", color="activite_agropastorale")
     st.plotly_chart(fig, use_container_width=True)
 
     #-----------------------------------------------------------------------
@@ -450,7 +419,6 @@ try:
     with col2:
         sel_occup = st.selectbox('Statut d\'occupation',options=('TOUT', "PROPRIETAIRE", "LOCATAIRE", "AUTRE"))
     if sel_occup != "TOUT":
-        # (1=Propriétaire; 2=Locataire; 3=Autre)
         if (sel_occup == "PROPRIETAIRE"):
             occup = "Propriétaire"
         elif (sel_occup == "LOCATAIRE"):
@@ -480,8 +448,8 @@ try:
 
     fig = px.funnel(df_aff, x='count', y='statut_occupation', color='autochtone')
 
-
     st.plotly_chart(fig, use_container_width=True)
 
 except:
+    # Au cas où les dataframes sont vides
     st.subheader('DATAFRAME VIDE')
